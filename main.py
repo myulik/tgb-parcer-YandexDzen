@@ -28,18 +28,21 @@ url_weather = 'https://yandex.ru/pogoda/?lat=56.847977&lon=60.65871&win=557'
 
 data_news = requests.get(url_news, headers=headers).text
 soup_news = BeautifulSoup(data_news, 'lxml')
-news = soup_news.find("div", class_="card-news__tabPane-3_ card-news__active-2u").find_all('span')
+news = soup_news.find("div", class_="dzen-desktop--card-news__tabPane-3_ dzen-desktop--card-news__active-2u").find_all('span')
 
+rate_dollar = soup_news.find("span", class_="dzen-desktop--currency-rates__rateValue-2X")
+rate_dollar = "\n\nКурс доллара - " + rate_dollar.text
 
 data_weather = requests.get(url_weather, headers=headers).text
 soup_weather = BeautifulSoup(data_weather, 'lxml')
 weather = soup_weather.find("div", class_="fact__temp-wrap")
 weather = re.findall('Текущая температура .*?"', str(weather))
 weather = ''.join(weather)[:-1]
+
 if weather == '':
     weather = 'капча не пройдена'
 async def send_to_admin(message):
-    data = weather + "\n\nВажные новости на " + str(local_time) + ":\n\n" + "\n".join(["⚡ " + i.text for i in news])
+    data = weather + rate_dollar + "\n\nВажные новости на " + str(local_time) + ":\n\n" + "\n".join(["⚡ " + i.text for i in news if len(i.text) > 10])
     await bot.send_message(ADMIN_ID, data)
     exit()
 
