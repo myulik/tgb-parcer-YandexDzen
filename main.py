@@ -25,6 +25,7 @@ headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KH
 
 url_news = "https:\u002F\u002Fsso.dzen.ru\u002Finstall?uuid=c7ce5f75-f2b9-4546-aec6-e47d73384981"
 url_weather = 'https://yandex.ru/pogoda/?lat=56.847977&lon=60.65871&win=557'
+url_sunrise_sunset = 'https://world-weather.ru/pogoda/russia/yekaterinburg/sunrise/?ysclid=m2gtwasife232502601'
 
 data_news = requests.get(url_news, headers=headers).text
 soup_news = BeautifulSoup(data_news, 'lxml')
@@ -39,10 +40,17 @@ weather = soup_weather.find("div", class_="fact__temp-wrap")
 weather = re.findall('Текущая температура .*?"', str(weather))
 weather = ''.join(weather)[:-1]
 
+data_sunset = requests.get(url_sunrise_sunset, headers=headers).text
+soup_sunset = BeautifulSoup(data_sunset, 'lxml')
+sunset = soup_sunset.find_all("dd")
+sunset = sunset[0].text + ' - ' + sunset[1].text + '\n'
+
+
+
 if weather == '':
     weather = 'капча не пройдена'
 async def send_to_admin(message):
-    data = weather + rate_dollar + "\n\nВажные новости на " + str(local_time) + ":\n\n" + "\n".join(["⚡ " + i.text for i in news if len(i.text) > 10])
+    data = sunset + weather + rate_dollar + "\n\nВажные новости на " + str(local_time) + ":\n\n" + "\n".join(["⚡ " + i.text for i in news if len(i.text) > 10])
     await bot.send_message(ADMIN_ID, data)
     exit()
 
